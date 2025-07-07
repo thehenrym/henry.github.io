@@ -124,13 +124,61 @@
         .image-grid-item {
             overflow: hidden;
             background-color: #ccc;
+            cursor: pointer;
         }
         .image-grid-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.3s ease;
         }
+        .image-grid-item img:hover {
+            transform: scale(1.05);
+        }
+
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            display: block;
+            margin: auto;
+            border-radius: 0;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
 
         @media (max-width: 768px) {
             .text-container .large-text {
@@ -202,6 +250,11 @@
                 <img src="images/12.png" alt="Motorsport 4 Title" onerror="this.onerror=null;this.src='https://placehold.co/400x600/cccccc/ffffff?text=Error+Loading';">
             </div>
         </div>
+    </div>
+
+    <div id="imageModal" class="image-modal">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="img01">
     </div>
 
     <script>
@@ -292,6 +345,33 @@
                     if (player) {
                         player.setVolume(volumeSlider.value * 100);
                         updateMusicButtonColor(parseFloat(volumeSlider.value));
+                    }
+                });
+            }
+
+            const imageModal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('img01');
+            const closeBtn = document.getElementsByClassName('modal-close')[0];
+            const imageGridItems = document.querySelectorAll('.image-grid-item img');
+
+            imageGridItems.forEach(img => {
+                img.addEventListener('click', function() {
+                    imageModal.style.display = 'flex';
+                    modalImg.src = this.src;
+                    modalImg.alt = this.alt;
+                });
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    imageModal.style.display = 'none';
+                });
+            }
+
+            if (imageModal) {
+                imageModal.addEventListener('click', (event) => {
+                    if (event.target === imageModal) {
+                        imageModal.style.display = 'none';
                     }
                 });
             }
