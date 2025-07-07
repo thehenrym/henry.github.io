@@ -39,6 +39,67 @@
             line-height: 1;
         }
 
+        .music-control-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #musicToggleButton {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            line-height: 1;
+        }
+
+        #musicToggleButton:hover {
+            opacity: 0.7;
+        }
+
+        #volumeSlider {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 8px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 0;
+        }
+
+        #volumeSlider:hover {
+            opacity: 1;
+        }
+
+        #volumeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            cursor: pointer;
+            border-radius: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #volumeSlider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            cursor: pointer;
+            border-radius: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
         .section-heading {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 4rem;
@@ -78,6 +139,12 @@
             .clock-container {
                 font-size: 2rem;
             }
+            #musicToggleButton {
+                font-size: 2.5rem;
+            }
+            #volumeSlider {
+                width: 150px;
+            }
             .section-heading {
                 font-size: 2.5rem;
             }
@@ -92,9 +159,15 @@
 </head>
 <body>
 
+    <audio id="background-music" src="music/song1.mp3" preload="auto" loop></audio>
+
     <div class="text-container">
         <div class="large-text">HENRY</div>
         <div id="live-clock" class="clock-container"></div>
+        <div class="music-control-container">
+            <button id="musicToggleButton">PLAY MUSIC</button>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5">
+        </div>
     </div>
 
     <div class="container">
@@ -140,9 +213,52 @@
             document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
         }
 
+        function updateMusicButtonColor(volume) {
+            const musicToggleButton = document.getElementById('musicToggleButton');
+            const red = Math.round(volume * 255);
+            musicToggleButton.style.color = `rgb(${red}, 0, 0)`;
+        }
+
         window.onload = function() {
             updateClock();
             setInterval(updateClock, 1000);
+
+            const backgroundMusic = document.getElementById('background-music');
+            const musicToggleButton = document.getElementById('musicToggleButton');
+            const volumeSlider = document.getElementById('volumeSlider');
+            let isPlaying = false;
+
+            if (backgroundMusic && volumeSlider) {
+                backgroundMusic.volume = volumeSlider.value;
+                updateMusicButtonColor(parseFloat(volumeSlider.value));
+            }
+
+            if (musicToggleButton && backgroundMusic) {
+                musicToggleButton.addEventListener('click', () => {
+                    if (isPlaying) {
+                        backgroundMusic.pause();
+                    } else {
+                        backgroundMusic.play().catch(error => {
+                            console.log("Music play was prevented:", error);
+                        });
+                    }
+                    isPlaying = !isPlaying;
+                });
+
+                backgroundMusic.onplay = () => {
+                    isPlaying = true;
+                };
+                backgroundMusic.onpause = () => {
+                    isPlaying = false;
+                };
+            }
+
+            if (volumeSlider && backgroundMusic) {
+                volumeSlider.addEventListener('input', () => {
+                    backgroundMusic.volume = volumeSlider.value;
+                    updateMusicButtonColor(parseFloat(volumeSlider.value));
+                });
+            }
         };
     </script>
 
