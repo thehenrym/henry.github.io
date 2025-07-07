@@ -159,7 +159,7 @@
 </head>
 <body>
 
-    <audio id="background-music" src="music/song1.mp3" preload="auto" loop></audio>
+    <div id="youtube-audio-player" style="display: none;"></div>
 
     <div class="text-container">
         <div class="large-text">HENRY</div>
@@ -205,6 +205,53 @@
     </div>
 
     <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        let player;
+        let isPlaying = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-audio-player', {
+                videoId: 'gsuE5jR-oqI',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': 'gsuE5jR-oqI',
+                    'disablekb': 1,
+                    'fs': 0,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'showinfo': 0,
+                    'iv_load_policy': 3,
+                    'start': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            const volumeSlider = document.getElementById('volumeSlider');
+            if (volumeSlider) {
+                event.target.setVolume(volumeSlider.value * 100);
+                updateMusicButtonColor(parseFloat(volumeSlider.value));
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                isPlaying = true;
+            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                isPlaying = false;
+            }
+        }
+
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -223,40 +270,29 @@
             updateClock();
             setInterval(updateClock, 1000);
 
-            const backgroundMusic = document.getElementById('background-music');
             const musicToggleButton = document.getElementById('musicToggleButton');
             const volumeSlider = document.getElementById('volumeSlider');
-            let isPlaying = false;
 
-            if (backgroundMusic && volumeSlider) {
-                backgroundMusic.volume = volumeSlider.value;
-                updateMusicButtonColor(parseFloat(volumeSlider.value));
-            }
-
-            if (musicToggleButton && backgroundMusic) {
+            if (musicToggleButton) {
                 musicToggleButton.addEventListener('click', () => {
-                    if (isPlaying) {
-                        backgroundMusic.pause();
+                    if (player) {
+                        if (isPlaying) {
+                            player.pauseVideo();
+                        } else {
+                            player.playVideo();
+                        }
                     } else {
-                        backgroundMusic.play().catch(error => {
-                            console.log("Music play was prevented:", error);
-                        });
+                        console.log("YouTube player not ready yet.");
                     }
-                    isPlaying = !isPlaying;
                 });
-
-                backgroundMusic.onplay = () => {
-                    isPlaying = true;
-                };
-                backgroundMusic.onpause = () => {
-                    isPlaying = false;
-                };
             }
 
-            if (volumeSlider && backgroundMusic) {
+            if (volumeSlider) {
                 volumeSlider.addEventListener('input', () => {
-                    backgroundMusic.volume = volumeSlider.value;
-                    updateMusicButtonColor(parseFloat(volumeSlider.value));
+                    if (player) {
+                        player.setVolume(volumeSlider.value * 100);
+                        updateMusicButtonColor(parseFloat(volumeSlider.value));
+                    }
                 });
             }
         };
